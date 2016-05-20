@@ -2,18 +2,21 @@
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2009 AOE media GmbH <dev@aoemedia.de>
+ *  (c) 2009 AOE GmbH <dev@aoe.com>
  *  All rights reserved
  *
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 require_once (dirname(__FILE__) .DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR. 'class.tx_staticpub.php');
 /**
  * Test for class tx_staticpub
  * @package static_pub
  */
-class tx_staticpub_testcase extends tx_phpunit_testcase {
+class tx_staticpub_testcase extends Tx_Phpunit_TestCase {
 	/**
 	 * @var boolean
 	 */
@@ -33,7 +36,7 @@ class tx_staticpub_testcase extends tx_phpunit_testcase {
 		$this->tx_staticpub = new tx_staticpub();
 		$tempPath = realpath(dirname(__FILE__) .DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'typo3temp');
 		$this->pubDir = $tempPath.DIRECTORY_SEPARATOR.uniqid('testPubDir');
-		t3lib_div::mkdir($this->pubDir);
+		GeneralUtility::mkdir($this->pubDir);
 	}
 	/**
 	 * test the method createStaticFile
@@ -95,7 +98,7 @@ class tx_staticpub_testcase extends tx_phpunit_testcase {
 		$page_id = 0;
 		$pubDir = $this->pubDir.DIRECTORY_SEPARATOR;
 		$publishDirForResources = $pubDir.'res';
-		t3lib_div::mkdir($publishDirForResources);
+		GeneralUtility::mkdir($publishDirForResources);
 		$options = array('includeResources'=>TRUE,'publishDirForResources'=>$publishDirForResources.DIRECTORY_SEPARATOR);
 		$this->tx_staticpub->createStaticFile($path,$file,$content,$pubDir,$page_id,$options);
 		$this->assertFileNotExists($this->pubDir.DIRECTORY_SEPARATOR.'typo3conf'.DIRECTORY_SEPARATOR.'ext'.DIRECTORY_SEPARATOR.'staticpub'.DIRECTORY_SEPARATOR.'ext_icon.gif','file not created');
@@ -112,7 +115,7 @@ class tx_staticpub_testcase extends tx_phpunit_testcase {
 		$page_id = 0;
 		$pubDir = $this->pubDir.DIRECTORY_SEPARATOR;
 		$publishDirForResources = $pubDir.'res';
-		t3lib_div::mkdir($publishDirForResources);
+		GeneralUtility::mkdir($publishDirForResources);
 		$options = array('includeResources'=>TRUE,'publishDirForResources'=>$publishDirForResources.DIRECTORY_SEPARATOR);
 		$this->tx_staticpub->createStaticFile($path,$file,$content,$pubDir,$page_id,$options);
 		$this->assertFileExists($this->pubDir.DIRECTORY_SEPARATOR.'res'.DIRECTORY_SEPARATOR.'typo3conf'.DIRECTORY_SEPARATOR.'ext'.DIRECTORY_SEPARATOR.'staticpub'.DIRECTORY_SEPARATOR.'tests'.DIRECTORY_SEPARATOR.'fixtures'.DIRECTORY_SEPARATOR.'test.css','file not created');
@@ -126,6 +129,6 @@ class tx_staticpub_testcase extends tx_phpunit_testcase {
 	 */
 	protected function tearDown(){
 		unset($this->tx_staticpub);
-		t3lib_div::rmdir($this->pubDir,TRUE);
+		GeneralUtility::rmdir($this->pubDir,TRUE);
 	}
 }

@@ -28,38 +28,9 @@
  *
  * @author	Kasper Skaarhoj <kasper@typo3.com>
  */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   72: class tx_staticpub
- *   82:     function getPublishDir()
- *
- *              SECTION: Create static files
- *  120:     function createStaticFile($path,$file,$content,$pubDir,$page_id)
- *  176:     function createFile($path,$file,$content,$pubDir,$page_id)
- *  227:     function createResFile($path,$file,$content,$pubDir,$filepath_hash)
- *  275:     function createPath($path,$pubDir)
- *  300:     function createRecordForFile($filepath, $page_id, $update=FALSE)
- *
- *              SECTION: Remove static file
- *  340:     function remove_fileId($filepath_hash)
- *  373:     function remove_filesFromPageId($page_id)
- *  387:     function removeFile($filePath)
- *  416:     function removeDirRecursively($file, $pubDir)
- *  432:     function finalIntegrityCheck($fileOrDirToDelete, $pubDir)
- *
- *              SECTION: Various SQL stuff
- *  459:     function getRecordForFile($filepath)
- *  474:     function getRecordForPageID($page_id)
- *
- * TOTAL FUNCTIONS: 13
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
 
-
+use TYPO3\CMS\Backend\Utility\BackendUtility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 
 /**
@@ -98,7 +69,7 @@ class tx_staticpub {
 			$params = array(
 				'currentPageId' => $currentPageId,
 			);
-			$pubDir = t3lib_div::callUserFunction(
+			$pubDir = GeneralUtility::callUserFunction(
 				$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['staticpub/class.tx_staticpub.php']['getPublishDir'],
 				$params,
 				$this
@@ -107,7 +78,7 @@ class tx_staticpub {
 
 		// retrieve from page tsconfig
 		if (empty($pubDir)) {
-			$pageTSconfig = t3lib_BEfunc::getPagesTSconfig($currentPageId);
+			$pageTSconfig = BackendUtility::getPagesTSconfig($currentPageId);
 			if (isset($pageTSconfig['tx_staticpub.']['publishDir'])) {
 				$pubDir = $pageTSconfig['tx_staticpub.']['publishDir'];
 			}
@@ -119,7 +90,7 @@ class tx_staticpub {
 		}
 
 		if (!empty($pubDir)) {
-			$pubDirAbs = t3lib_div::getFileAbsFileName($pubDir);
+			$pubDirAbs = GeneralUtility::getFileAbsFileName($pubDir);
 			if (substr($pubDirAbs,-1)!='/')	{
 				$pubDirAbs.='/';
 			}
@@ -136,7 +107,7 @@ class tx_staticpub {
 	 *
 	 * @param  array $conf  Staticpub crawler configuration array.
 	 * @return string		Comma separated list of resource file extensions.
-	 * @author Chetan Thapliyal <chetan.thapliyal@aoemedia.de>
+	 * @author Chetan Thapliyal <chetan.thapliyal@aoe.com>
 	 */
 	protected function getResourceWhitelist( array $conf=null ) {
 		# Default resource types allowed for publishing
@@ -198,7 +169,7 @@ class tx_staticpub {
 
 		# Fix base URL:
 		if ( isset($options['overruleBaseUrl']))	{
-			$htmlparser = t3lib_div::makeInstance( 't3lib_parsehtml' );
+			$htmlparser = GeneralUtility::makeInstance( 'TYPO3\\CMS\\Core\\Html\\HtmlParser' );
 			$parts = $htmlparser->splitTags( 'base', $content, 1 );
 
 			if ( isset($parts[1]) ) {
@@ -208,7 +179,7 @@ class tx_staticpub {
 		}
 		# Fix base URL with uid:
 		if (isset($options['sys_domain_base_url']))	{
-			$htmlparser = t3lib_div::makeInstance( 't3lib_parsehtml' );
+			$htmlparser = GeneralUtility::makeInstance( 'TYPO3\\CMS\\Core\\Html\\HtmlParser' );
 			$parts = $htmlparser->splitTags( 'base', $content, 1 );
 			$url = $this->getUrlFromSysDomainUid($options['sys_domain_base_url']);
 			if ( isset($parts[1]) ) {
@@ -230,7 +201,7 @@ class tx_staticpub {
 
 		if ( $options['includeResources'] || $options['checkLinks'] ) {
 			$token = md5( microtime() );
-			$htmlparser = t3lib_div::makeInstance( 't3lib_parsehtml' );
+			$htmlparser = GeneralUtility::makeInstance( 'TYPO3\\CMS\\Core\\Html\\HtmlParser' );
 			$parts = explode( $token, $htmlparser->prefixResourcePath($token, $content, array(), $token) );
 
 			if ( array_key_exists('includeResources', $options) ) {
@@ -333,8 +304,8 @@ class tx_staticpub {
 				'*',
 				'sys_domain',
 				'uid = '.$uid .
-				t3lib_BEfunc::BEenableFields('sys_domain') .
-				t3lib_BEfunc::deleteClause('sys_domain')
+				BackendUtility::BEenableFields('sys_domain') .
+				BackendUtility::deleteClause('sys_domain')
 			);
 			$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
 			if ($row['domainName'] != '') {
@@ -351,7 +322,7 @@ class tx_staticpub {
 	 * @param  integer 	$pid		Page ID.
 	 * @param  array	$options	Crawler configuration.
 	 * @return void
-	 * @author Chetan Thapliyal <chetan.thapliyal@aoemedia.de>
+	 * @author Chetan Thapliyal <chetan.thapliyal@aoe.com>
 	 */
 	protected function includeResources( array $resources, $pubDir, $pid, $options ) {
 
@@ -359,16 +330,16 @@ class tx_staticpub {
 		$resourceWhitelist = $this->getResourceWhitelist( $options );
 
 		foreach ( $resources as $resource ) {
-			$fileInfo = t3lib_div::split_fileref( $resource );
+			$fileInfo = GeneralUtility::split_fileref( $resource );
 
-			if ( t3lib_div::inList($resourceWhitelist, $fileInfo['fileext']) )	{
-				$fileName = t3lib_div::getFileAbsFileName( $resource );
+			if ( GeneralUtility::inList($resourceWhitelist, $fileInfo['fileext']) )	{
+				$fileName = GeneralUtility::getFileAbsFileName( $resource );
 
 				if ( @is_file($fileName) ) {
 					if ( !isset($log[$resource]) ) {
-						$fileInfo 	= t3lib_div::split_fileref( $resource );
+						$fileInfo 	= GeneralUtility::split_fileref( $resource );
 						$path 		= $this->getResourcePrefix($fileInfo['file'], $options) . $fileInfo['path'];
-						$state 		= $this->createFile( $path, $fileInfo['file'], t3lib_div::getUrl($fileName), $pubDir, $pid, true );
+						$state 		= $this->createFile( $path, $fileInfo['file'], GeneralUtility::getUrl($fileName), $pubDir, $pid, true );
 
 						$logEntry = array();
 						$logEntry['fileInfo'] = $fileInfo;
@@ -404,7 +375,7 @@ class tx_staticpub {
 	 * @param  string  $path		Path to the content file. Require to resolve relative path.
 	 * @param  boolean $recursive	Flag to specify whether or not to parse fetched resources recursively for containing resources.
 	 * @return array				Array of fetched resource links.
-	 * @author Chetan Thapliyal <chetan.thapliyal@aoemedia.de>
+	 * @author Chetan Thapliyal <chetan.thapliyal@aoe.com>
 	 */
 	protected function extractResources( $content, $path, $recursive=false ) {
 
@@ -439,9 +410,9 @@ class tx_staticpub {
 				}
 				$resourceRoot = substr( $resource, 0, strpos($resource, '/') );
 				if ( !in_array($resourceRoot, $resourceLocations) && strcmp('/', $resource{0}) ) {
-					$resources[$index] = t3lib_div::resolveBackPath( $path . $resource );
+					$resources[$index] = GeneralUtility::resolveBackPath( $path . $resource );
 				} else {
-					$resources[$index] = t3lib_div::resolveBackPath( $resource );
+					$resources[$index] = GeneralUtility::resolveBackPath( $resource );
 				}
 			}
 
@@ -472,7 +443,7 @@ class tx_staticpub {
 	 *
 	 * @param  integer $pid		Page-ID to extract the resources for.
 	 * @return array 			An array of TYPO3 relative resource file paths.
-	 * @author Chetan Thapliyal <chetan.thapliyal@aoemedia.de>
+	 * @author Chetan Thapliyal <chetan.thapliyal@aoe.com>
 	 */
 	protected function getResourcesFromRefIndex( $pid ) {
 		$resources = array();
@@ -500,7 +471,7 @@ class tx_staticpub {
 	 *
 	 * @param  array $conf	Staticpub crawler configuration.
 	 * @return array		Array of TYPO3 relative resource file paths.
-	 * @author Chetan Thapliyal <chetan.thapliyal@aoemedia.de>
+	 * @author Chetan Thapliyal <chetan.thapliyal@aoe.com>
 	 */
 	protected function getResourcesFromStaticIncludes( array $conf ) {
 		$resources = array();
@@ -509,7 +480,7 @@ class tx_staticpub {
 			$staticIncludes = $conf['resources.']['staticIncludes.'];
 
 			foreach ( $staticIncludes as $resource ) {
-				$resource = t3lib_div::getFileAbsFileName( $resource );
+				$resource = GeneralUtility::getFileAbsFileName( $resource );
 
 				if ( @is_file($resource) ) {
 					$resources[] = substr( $resource, strlen(PATH_site) );
@@ -530,7 +501,7 @@ class tx_staticpub {
 	 * @param  array 	$absDirPath	Absoute directory path to parse for resource files.
 	 * @param  integer 	$depth		A dummy parameter to control recusion level for sub-directories parsing.
 	 * @return array				Array of TYPO3 relative resource file paths.
-	 * @author Chetan Thapliyal <chetan.thapliyal@aoemedia.de>
+	 * @author Chetan Thapliyal <chetan.thapliyal@aoe.com>
 	 */
 	protected function getResourcesFromDirectory( $absDirPath, $depth=0 ) {
 		$resources = array();
@@ -564,7 +535,7 @@ class tx_staticpub {
 	 * @param  string $file  File name.
 	 * @param  array  $conf  Staticpub crawler configuration.
 	 * @return string        Static path string.
-	 * @author Chetan Thapliyal <chetan.thapliyal@aoemedia.de>
+	 * @author Chetan Thapliyal <chetan.thapliyal@aoe.com>
 	 */
 	protected function getResourcePrefix( $file, array $conf ) {
 
@@ -644,7 +615,7 @@ class tx_staticpub {
 			if (is_array ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['staticpub/class.tx_staticpub.php']['createFile_processContent'])) {
 				reset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['staticpub/class.tx_staticpub.php']['createFile_processContent']);
 				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['staticpub/class.tx_staticpub.php']['createFile_processContent'] as $classRef) {
-					$userObj = &t3lib_div::getUserObj($classRef);
+					$userObj = &GeneralUtility::getUserObj($classRef);
 					$content = $userObj->createFile_processContent($path,$file,$content,$pubDir,$page_id,$isResource);
 				}
 			}
@@ -655,14 +626,14 @@ class tx_staticpub {
 				if (!is_file($pubDir.$path.$fN) || (md5_file($pubDir.$path.$fN) != md5($content))) {
 
 					// Overwrite file if it has changed or does not exist
-					if(FALSE !== t3lib_div::writeFile($pubDir.$path.$fN, $content)){
-						if (TYPO3_DLOG) t3lib_div::devLog(sprintf('File "%s" was  changed and written', $path.$fN), 'staticpuc', 0);
+					if(FALSE !== GeneralUtility::writeFile($pubDir.$path.$fN, $content)){
+						if (TYPO3_DLOG) GeneralUtility::devLog(sprintf('File "%s" was  changed and written', $path.$fN), 'staticpuc', 0);
 						$result = self::FILE_CHANGED;
 					}else{
 						$this->errorMsg = 'File "'.$pubDir.$path.$fN.'" could not be created.';
 					}
 				} else {
-					if (TYPO3_DLOG) t3lib_div::devLog(sprintf('File "%s" has not changed', $path.$fN), 'staticpuc', 0);
+					if (TYPO3_DLOG) GeneralUtility::devLog(sprintf('File "%s" has not changed', $path.$fN), 'staticpuc', 0);
 
 					$result = self::FILE_NOCHANGE;
 				}
@@ -673,7 +644,7 @@ class tx_staticpub {
 				return $result;
 			} else {
 					// Write new file:
-				if(FALSE !== t3lib_div::writeFile($pubDir.$path.$fN, $content)){
+				if(FALSE !== GeneralUtility::writeFile($pubDir.$path.$fN, $content)){
 					// Create record for published file:
 					$this->createRecordForFile($path.$fN, $isResource?0:$page_id);
 					return self::FILE_CREATED;
@@ -703,7 +674,7 @@ class tx_staticpub {
 			foreach($pathParts as $c => $partOfPath)	{
 				if (strcmp($partOfPath,''))	{
 					if (!@is_dir($pubDir.$partOfPath))	{
-						t3lib_div::mkdir($pubDir.$partOfPath);
+						GeneralUtility::mkdir($pubDir.$partOfPath);
 					}
 
 					if (@is_dir($pubDir.$partOfPath))	{
@@ -729,14 +700,14 @@ class tx_staticpub {
 			// Set
 		$field_values = array(
 			'filepath' => $filepath,
-			'filepath_hash' => t3lib_div::md5int($filepath),
+			'filepath_hash' => GeneralUtility::md5int($filepath),
 			'page_id' => $page_id,
 			'tstamp' => time(),
 		);
 
 		if ($update)	{
 				// Update in database:
-			$GLOBALS['TYPO3_DB']->exec_UPDATEquery('tx_staticpub_pages', 'filepath_hash='.t3lib_div::md5int($filepath), $field_values);
+			$GLOBALS['TYPO3_DB']->exec_UPDATEquery('tx_staticpub_pages', 'filepath_hash='.GeneralUtility::md5int($filepath), $field_values);
 		} else {
 				// Insert in database:
 			$GLOBALS['TYPO3_DB']->exec_INSERTquery('tx_staticpub_pages', $field_values);
@@ -816,7 +787,7 @@ class tx_staticpub {
 
 			// Initialize:
 		$pubDir = $this->getPublishDir();
-		$file = t3lib_div::getFileAbsFileName($pubDir.$filePath);
+		$file = GeneralUtility::getFileAbsFileName($pubDir.$filePath);
 
 		if ($pubDir)	{
 
@@ -843,7 +814,7 @@ class tx_staticpub {
 	 */
 	function removeDirRecursively($file, $pubDir)	{
 		$fileDir = preg_replace('/\/[^\/]*$/','',$file);
-		if (@is_dir($fileDir) && t3lib_div::isFirstPartOfStr($fileDir, $pubDir) && $this->finalIntegrityCheck($fileDir, $pubDir))	{
+		if (@is_dir($fileDir) && GeneralUtility::isFirstPartOfStr($fileDir, $pubDir) && $this->finalIntegrityCheck($fileDir, $pubDir))	{
 			if (@rmdir($fileDir))	{
 				$this->removeDirRecursively($fileDir, $pubDir);
 			}
@@ -858,7 +829,7 @@ class tx_staticpub {
 	 * @return	boolean		Returns TRUE if OK, otherwise it DIES! (because it really shouldn't fail! You should have checked it all on beforehand! This is only an emergency brake against your bad coding...)
 	 */
 	function finalIntegrityCheck($fileOrDirToDelete, $pubDir)	{
-		if ($fileOrDirToDelete === t3lib_div::getFileAbsFileName($fileOrDirToDelete) && $pubDir && t3lib_div::isFirstPartOfStr($fileOrDirToDelete, $pubDir))	{
+		if ($fileOrDirToDelete === GeneralUtility::getFileAbsFileName($fileOrDirToDelete) && $pubDir && GeneralUtility::isFirstPartOfStr($fileOrDirToDelete, $pubDir))	{
 			return TRUE;
 		} else die('INTEGRITY CHECK on "'.$fileOrDirToDelete.'" FAILED!');
 	}
@@ -887,7 +858,7 @@ class tx_staticpub {
 		list($rec) = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
 					'*',
 					'tx_staticpub_pages',
-					'filepath_hash='.t3lib_div::md5int($filepath)
+					'filepath_hash='.GeneralUtility::md5int($filepath)
 				);
 		return $rec;
 	}
@@ -913,7 +884,7 @@ class tx_staticpub {
 	private function getPublishDirForResources($publisDir,array $options){
 		if(isset($options['publishDirForResources'])){
 			$publisDir = $options['publishDirForResources'];
-			$publisDir = t3lib_div::getFileAbsFileName($publisDir);
+			$publisDir = GeneralUtility::getFileAbsFileName($publisDir);
 			if (substr($publisDir,-1)!='/')	{
 				$publisDir.='/';
 			}
@@ -933,12 +904,8 @@ class tx_staticpub {
 			if (FALSE === mkdir($pubDirAbs, octdec($GLOBALS['TYPO3_CONF_VARS']['BE']['folderCreateMask']),TRUE)){
 				return FALSE;
 			}
-			t3lib_div::fixPermissions($pubDirAbs);
+			GeneralUtility::fixPermissions($pubDirAbs);
 		}
 		return TRUE;
 	}
-}
-
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/staticpub/class.tx_staticpub.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/staticpub/class.tx_staticpub.php']);
 }

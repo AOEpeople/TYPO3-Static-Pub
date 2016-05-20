@@ -28,21 +28,12 @@
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   58: class tx_staticpub_modfunc1 extends t3lib_extobjbase
- *   65:     function modMenu()
- *   83:     function main()
- *  134:     function renderModule($tree)
- *
- * TOTAL FUNCTIONS: 3
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
 
+use TYPO3\CMS\Backend\Module\AbstractFunctionModule;
+use TYPO3\CMS\Backend\Utility\BackendUtility;
+use TYPO3\CMS\Backend\Utility\IconUtility;
+use TYPO3\CMS\Backend\Tree\View\PageTreeView;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Static publishing extension
@@ -51,7 +42,7 @@
  * @subpackage tx_staticpub
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
-class tx_staticpub_modfunc1 extends t3lib_extobjbase {
+class tx_staticpub_modfunc1 extends AbstractFunctionModule {
 
 	/**
 	 * @var tx_staticpub
@@ -82,26 +73,24 @@ class tx_staticpub_modfunc1 extends t3lib_extobjbase {
 	 * @return	string		Output HTML for the module.
 	 */
 	function main()	{
-		global $BACK_PATH,$LANG,$SOBE;
-
 		$theOutput = '';
 
 			// Depth selector:
-		$h_func = t3lib_BEfunc::getFuncMenu($this->pObj->id,'SET[depth]',$this->pObj->MOD_SETTINGS['depth'],$this->pObj->MOD_MENU['depth'],'index.php');
+		$h_func = BackendUtility::getFuncMenu($this->pObj->id,'SET[depth]',$this->pObj->MOD_SETTINGS['depth'],$this->pObj->MOD_MENU['depth'],'index.php');
 		$theOutput.= $h_func;
 
 			// Showing the tree:
 			// Initialize starting point of page tree:
 		$treeStartingPoint = intval($this->pObj->id);
-		$treeStartingRecord = t3lib_BEfunc::getRecord('pages', $treeStartingPoint);
+		$treeStartingRecord = BackendUtility::getRecord('pages', $treeStartingPoint);
 		$depth = $this->pObj->MOD_SETTINGS['depth'];
 
 			// Initialize tree object:
-		$tree = t3lib_div::makeInstance('t3lib_pageTree');
+		$tree = GeneralUtility::makeInstance('TYPO3\\CMS\\Backend\\Tree\\View\\PageTreeView');
 		$tree->init('AND '.$GLOBALS['BE_USER']->getPagePermsClause(1));
 
 			// Creating top icon; the current page
-		$HTML = t3lib_iconWorks::getIconImage('pages', $treeStartingRecord, $GLOBALS['BACK_PATH'],'align="top"');
+		$HTML = IconUtility::getIconImage('pages', $treeStartingRecord, $GLOBALS['BACK_PATH'],'align="top"');
 		$tree->tree[] = array(
 			'row' => $treeStartingRecord,
 			'HTML' => $HTML
@@ -113,8 +102,7 @@ class tx_staticpub_modfunc1 extends t3lib_extobjbase {
 		}
 
 			// Add CSS needed:
-		$css_content = '
-		';
+		$css_content = '';
 		$marker = '/*###POSTCSSMARKER###*/';
 		$this->pObj->content = str_replace($marker,$css_content.chr(10).$marker,$this->pObj->content);
 
@@ -127,23 +115,23 @@ class tx_staticpub_modfunc1 extends t3lib_extobjbase {
 	/**
 	 * Rendering the information
 	 *
-	 * @param	array		$tree The Page tree data
+	 * @param	PageTreeView $tree The Page tree data
 	 * @return	string		HTML for the information table.
 	 */
-	function renderModule($tree)	{
+	function renderModule(PageTreeView $tree)	{
 
 			// Init static publishing object:
-		$this->pubObj = t3lib_div::makeInstance('tx_staticpub');
+		$this->pubObj = GeneralUtility::makeInstance('tx_staticpub');
 		$pubDir = substr($this->pubObj->getPublishDir(),strlen(PATH_site));
 
 			// Commands executed?
-		if (t3lib_div::_GP('delete_file'))	{
-			$this->pubObj->remove_fileId(t3lib_div::_GP('delete_file'));
+		if (GeneralUtility::_GP('delete_file'))	{
+			$this->pubObj->remove_fileId(GeneralUtility::_GP('delete_file'));
 		}
-		if (t3lib_div::_GP('delete_page'))	{
-			$this->pubObj->remove_filesFromPageId(t3lib_div::_GP('delete_page'));
+		if (GeneralUtility::_GP('delete_page'))	{
+			$this->pubObj->remove_filesFromPageId(GeneralUtility::_GP('delete_page'));
 		}
-		$flushAll = t3lib_div::_POST('_flush_all');
+		$flushAll = GeneralUtility::_POST('_flush_all');
 
 
 			// Traverse tree:
@@ -164,17 +152,17 @@ class tx_staticpub_modfunc1 extends t3lib_extobjbase {
 					$tCells = array();
 
 					if (!$k)	{
-						$tCells[] = '<td nowrap="nowrap" valign="top" rowspan="'.count($filerecords).'"'.$cellAttrib.'>'.$row['HTML'].t3lib_BEfunc::getRecordTitle('pages',$row['row'],TRUE).'</td>';
+						$tCells[] = '<td nowrap="nowrap" valign="top" rowspan="'.count($filerecords).'"'.$cellAttrib.'>'.$row['HTML'].BackendUtility::getRecordTitle('pages',$row['row'],TRUE).'</td>';
 						$tCells[] = '<td nowrap="nowrap" valign="top" rowspan="'.count($filerecords).'"><a href="'.htmlspecialchars('index.php?id='.$this->pObj->id.'&delete_page='.$row['row']['uid']).'">'.
-									'<img'.t3lib_iconWorks::skinImg($this->pObj->doc->backPath,'gfx/garbage.gif','width="11" height="12"').' alt="" />'.
+									'<img'.IconUtility::skinImg($this->pObj->doc->backPath,'gfx/garbage.gif','width="11" height="12"').' alt="" />'.
 									'</a></td>';
 					}
 
 					$tCells[] = '<td nowrap="nowrap"><span class="typo3-dimmed">'.$pubDir.'</span> '.$frec['filepath'].'</td>';
 					$tCells[] = '<td>'.(@is_file(PATH_site.$pubDir.$frec['filepath'])?'OK':'Not found!').'</td>';
-					$tCells[] = '<td nowrap="nowrap">'.t3lib_BEfunc::dateTimeAge($frec['tstamp']).'</td>';
+					$tCells[] = '<td nowrap="nowrap">'.BackendUtility::dateTimeAge($frec['tstamp']).'</td>';
 					$tCells[] = '<td><a href="'.htmlspecialchars('index.php?id='.$this->pObj->id.'&delete_file='.$frec['filepath_hash']).'">'.
-								'<img'.t3lib_iconWorks::skinImg($this->pObj->doc->backPath,'gfx/garbage.gif','width="11" height="12"').' alt="" />'.
+								'<img'.IconUtility::skinImg($this->pObj->doc->backPath,'gfx/garbage.gif','width="11" height="12"').' alt="" />'.
 								'</a></td>';
 
 						// Compile Row:
@@ -188,7 +176,7 @@ class tx_staticpub_modfunc1 extends t3lib_extobjbase {
 					// Compile Row:
 				$output.= '
 					<tr class="bgColor4">
-						<td nowrap="nowrap" colspan="2"'.$cellAttrib.'>'.$row['HTML'].t3lib_BEfunc::getRecordTitle('pages',$row['row'],TRUE).'</td>
+						<td nowrap="nowrap" colspan="2"'.$cellAttrib.'>'.$row['HTML'].BackendUtility::getRecordTitle('pages',$row['row'],TRUE).'</td>
 						<td colspan="4"><em>No entries</em></td>
 					</tr>';
 			}
@@ -220,10 +208,4 @@ class tx_staticpub_modfunc1 extends t3lib_extobjbase {
 
 		return $output;
 	}
-}
-
-
-
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/staticpub/modfunc1/class.tx_staticpub_modfunc1.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/staticpub/modfunc1/class.tx_staticpub_modfunc1.php']);
 }

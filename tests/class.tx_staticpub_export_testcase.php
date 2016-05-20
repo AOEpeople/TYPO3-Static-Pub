@@ -2,18 +2,21 @@
 /***************************************************************
  * Copyright notice
  *
- * (c) 2009 AOE media GmbH <dev@aoemedia.de>
+ * (c) 2009 AOE GmbH <dev@aoe.com>
  * All rights reserved
  *
  *
  * This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 require_once (dirname ( __FILE__ ) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'class.tx_staticpub_export.php');
 /**
  * Test for class tx_staticpub_export
  * @package static_pub
  */
-class tx_staticpub_export_testcase extends tx_phpunit_testcase {
+class tx_staticpub_export_testcase extends Tx_Phpunit_TestCase {
 	/**
 	 * @var boolean
 	 */
@@ -67,6 +70,6 @@ class tx_staticpub_export_testcase extends tx_phpunit_testcase {
 	 */
 	protected function tearDown() {
 		unset ( $this->tx_staticpub_export );
-		t3lib_div::rmdir ( $this->pubDir, TRUE );
+		GeneralUtility::rmdir ( $this->pubDir, TRUE );
 	}
 }

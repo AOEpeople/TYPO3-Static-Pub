@@ -2,7 +2,7 @@
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2009 AOE media (dev@aoemedia.de)
+ *  (c) 2009 AOE (dev@aoe.com)
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -21,23 +21,28 @@
  *
  *  This copyright notice MUST APPEAR in all copies of the script! 
  ***************************************************************/
+
+use TYPO3\CMS\Core\Messaging\FlashMessage;
+use TYPO3\CMS\Scheduler\AdditionalFieldProviderInterface;
+use TYPO3\CMS\Scheduler\Controller\SchedulerModuleController;
+use TYPO3\CMS\Scheduler\Task\AbstractTask;
+
 /**
  * Field provider to configure the sheduler task
  * @package TYPO3
  * @subpackage tx_ncstaticfilecache
  */
-class tx_staticpub_tasks_export_AdditionalFieldProvider implements tx_scheduler_AdditionalFieldProvider {
+class tx_staticpub_tasks_export_AdditionalFieldProvider implements AdditionalFieldProviderInterface {
 	/**
 	 * This method is used to define new fields for adding or editing a task
 	 * In this case, it adds an email field
 	 *
 	 * @param array &$taskInfo  reference to the array containing the info used in the add/edit form
 	 * @param object $task when editing, reference to the current task object. Null when adding.
-	 * @param tx_scheduler_Module $schedulerModule reference to the calling object (Scheduler's BE module)
+	 * @param SchedulerModuleController $schedulerModule reference to the calling object (Scheduler's BE module)
 	 * @return array
 	 */
-	public function getAdditionalFields(array &$taskInfo, $task, tx_scheduler_Module $schedulerModule) {
-		
+	public function getAdditionalFields(array &$taskInfo, $task, SchedulerModuleController $schedulerModule) {
 		$additionalFields = array();
 		if (empty($taskInfo['folders'])) {
 			if ($schedulerModule->CMD == 'add') {
@@ -60,14 +65,14 @@ class tx_staticpub_tasks_export_AdditionalFieldProvider implements tx_scheduler_
 	 * Validates the additional fields' values
 	 * 
 	 * @param array &$submittedData
-	 * @param tx_scheduler_Module $schedulerModule
+	 * @param SchedulerModuleController $schedulerModule
 	 * @return boolean
 	 */
-	public function validateAdditionalFields(array &$submittedData, tx_scheduler_Module $schedulerModule) {
+	public function validateAdditionalFields(array &$submittedData, SchedulerModuleController $schedulerModule) {
 		if ( !empty($submittedData['folders']) ) {
 			return true;
 		} else {
-			$schedulerModule->addMessage('Please define the folders to export!', t3lib_FlashMessage::ERROR);
+			$schedulerModule->addMessage('Please define the folders to export!', FlashMessage::ERROR);
 			return false;
 		}
 	}
@@ -75,9 +80,9 @@ class tx_staticpub_tasks_export_AdditionalFieldProvider implements tx_scheduler_
 	 * Takes care of saving the additional fields' values in the task's object
 	 *
 	 * @param	array $submittedData
-	 * @param	tx_scheduler_Module $task
+	 * @param	AbstractTask $task
 	 */
-	public function saveAdditionalFields(array $submittedData, tx_scheduler_Task $task) {
+	public function saveAdditionalFields(array $submittedData, AbstractTask $task) {
 		$task->folders = $submittedData['folders'];
 	}
 

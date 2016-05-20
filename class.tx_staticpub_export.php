@@ -2,7 +2,7 @@
 /***************************************************************
  * Copyright notice
  *
- * (c) 2009 AOE media (dev@aoemedia.de)
+ * (c) 2009 AOE (dev@aoe.com)
  * All rights reserved
  *
  * This script is part of the TYPO3 project. The TYPO3 project is
@@ -129,7 +129,7 @@ class tx_staticpub_export {
 	 * @param string $sourceLocation
 	 * @param string $targetLocation
 	 * @return string rsync command
-	 * @throws RuntimeRuntimeException
+	 * @throws RuntimeException
 	 */
 	private function sync($sourceLocation, $targetLocation) {
 		$command = 'rsync --force --omit-dir-times --ignore-errors --archive --partial --perms  --delete';
@@ -154,7 +154,4 @@ class tx_staticpub_export {
 		return substr ( decoct ( fileperms ( $paths ) ), 2 );
 	}
 
-}
-if (defined ( 'TYPO3_MODE' ) && $TYPO3_CONF_VARS [TYPO3_MODE] ['XCLASS'] ['ext/staticpub/class.tx_staticpub_export.php']) {
-	include_once ($TYPO3_CONF_VARS [TYPO3_MODE] ['XCLASS'] ['ext/staticpub/class.tx_staticpub_export.php']);
 }
