@@ -82,4 +82,3 @@ $LOCAL_LANG = Array (
 	"vn" => Array (
 	),
 );
-?>

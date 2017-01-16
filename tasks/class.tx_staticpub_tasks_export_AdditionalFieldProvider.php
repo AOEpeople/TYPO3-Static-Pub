@@ -28,7 +28,7 @@ use TYPO3\CMS\Scheduler\Controller\SchedulerModuleController;
 use TYPO3\CMS\Scheduler\Task\AbstractTask;
 
 /**
- * Field provider to configure the sheduler task
+ * Field provider to configure the scheduler task
  * @package TYPO3
  * @subpackage tx_ncstaticfilecache
  */

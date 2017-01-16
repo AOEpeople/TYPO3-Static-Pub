@@ -78,17 +78,20 @@ class tx_staticpub_export {
 	}
 	/**
 	 * @param string $path
+     * @return string
 	 */
-	private function getAbsolutePath($path){
-		if(substr($path,0,1) !== DIRECTORY_SEPARATOR){
+	private function getAbsolutePath($path) {
+		if (substr($path,0,1) !== DIRECTORY_SEPARATOR) {
 			$path = PATH_site . $path;
 		}
 		return $path;
 	}
 	/**
 	 * @param string $path
+     * @return string
+     * @throws RuntimeException
 	 */
-	private function getRealPath($path){
+	private function getRealPath($path) {
 		if(FALSE === $realpath = realpath($path)){
 			throw new RuntimeException('invalid path: '.$path);
 		}
@@ -99,8 +102,8 @@ class tx_staticpub_export {
 	 * @param string $target
 	 */
 	private function autoCreateTarget($source,$target){
-		if(FALSE === mkdir($target, 0775, TRUE)){
-			throw new RuntimeException ( 'could not ceate dir: ' . $target );
+		if (FALSE === mkdir($target, 0775, TRUE)) {
+			throw new RuntimeException ( 'could not create dir: ' . $target );
 		}
 		$perm = $this->getShortFilePerm( $source  );
 		if (FALSE === chmod ( $target, octdec ( $perm ) )) {
@@ -114,21 +117,20 @@ class tx_staticpub_export {
 	 */
 	private function checkPermission($source, $target) {
 		if (FALSE === is_readable ( $source )) {
-			throw new RuntimeException ( 'source not is_readable: ' . $source );
+			throw new RuntimeException ( 'source not readable: ' . $source );
 		}
 		if (FALSE === is_writeable ( $target )) {
 			throw new RuntimeException ( 'target not writable: ' . $target );
 		}
 		if ((int)$this->getShortFilePerm( $source )  > (int) $this->getShortFilePerm( $target )) {
-			throw new RuntimeException ( 'source (' . $source . ') and target (' . $target . ') do not have the same file permisons ' );
+			throw new RuntimeException ( 'source (' . $source . ') and target (' . $target . ') do not have the same file permissions ' );
 		}
 	}
 	/**
-	 * Sync two directorys with each other.
+	 * Sync two directories with each other.
 	 *
 	 * @param string $sourceLocation
 	 * @param string $targetLocation
-	 * @return string rsync command
 	 * @throws RuntimeException
 	 */
 	private function sync($sourceLocation, $targetLocation) {
@@ -150,8 +152,7 @@ class tx_staticpub_export {
 	 * @param string $paths
 	 * @return string
 	 */
-	private function getShortFilePerm($paths){
+	private function getShortFilePerm($paths) {
 		return substr ( decoct ( fileperms ( $paths ) ), 2 );
 	}
-
 }

@@ -877,23 +877,23 @@ class tx_staticpub {
 				);
 	}
 	/**
-	 * @param string $publisDir default publishdir
+	 * @param string $publishDir default publishdir
 	 * @param array $options
 	 * @return string
 	 */
-	private function getPublishDirForResources($publisDir,array $options){
+	private function getPublishDirForResources($publishDir,array $options){
 		if(isset($options['publishDirForResources'])){
-			$publisDir = $options['publishDirForResources'];
-			$publisDir = GeneralUtility::getFileAbsFileName($publisDir);
-			if (substr($publisDir,-1)!='/')	{
-				$publisDir.='/';
+			$publishDir = $options['publishDirForResources'];
+			$publishDir = GeneralUtility::getFileAbsFileName($publishDir);
+			if (substr($publishDir,-1)!='/')	{
+				$publishDir.='/';
 			}
 		}
 
-		if(FALSE === $this->autoCreatePublishDir($publisDir)){
-			$GLOBALS['TSFE']->applicationData['tx_crawler']['log'][] = 'EXT:staticpub getPublishDirForResources - could no create publishdir '.$publisDir;
+		if(FALSE === $this->autoCreatePublishDir($publishDir)){
+			$GLOBALS['TSFE']->applicationData['tx_crawler']['log'][] = 'EXT:staticpub getPublishDirForResources - could no create publishdir '.$publishDir;
 		}
-		return $publisDir;
+		return $publishDir;
 	}
 	/**
 	 * @param string $pubDirAbs

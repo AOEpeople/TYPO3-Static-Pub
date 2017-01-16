@@ -37,6 +37,7 @@ class tx_staticpub_tasks_export extends AbstractTask {
 	public $folders;
 	/**
 	 * @return boolean	Returns true on successful execution, false on error
+     * @throws Exception
 	 */
 	public function execute() {
 		/* @var $export tx_staticpub_export */
